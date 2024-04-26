@@ -1,0 +1,148 @@
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QGraphicsScene, QGraphicsRectItem, \
+    QGraphicsTextItem, QTabWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap,QPen,QColor,QFont
+import sys
+
+from Gviewwindow import Ui_Form
+from Model.detect_model.yolo8 import yolo8
+from Model.detect_model.faster_rcnn import Faster_Rcnn
+from Model.detect_model.my_yolo import myyolo
+
+
+class detectionTab(QWidget,Ui_Form):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.setAcceptDrops(True)
+
+        self.imgpath = ""
+
+        self.pushButton.clicked.connect(self.imgupdate)
+        self.ModelcomboBox.currentIndexChanged.connect(self.on_model_change)
+
+        self.scene = QGraphicsScene(self)
+        self.graphicsView.setScene(self.scene)
+
+        self.rectangles = []
+        self.model = yolo8
+
+        self.pen = QPen()
+        self.pen.setColor(Qt.red)
+        self.pen.setWidth(10)
+
+        self.modellist = [ "My_yolo", "Yolo8", "Faster_Rcnn"]
+        for model in self.modellist:
+            self.ModelcomboBox.addItem(model)
+        self.ModelcomboBox.setCurrentIndex(0)
+
+    def on_model_change(self,index):
+        print(index)
+        if index == 0:
+            self.model = myyolo
+        elif index == 1:
+            self.model = yolo8
+        elif index == 2:
+            self.model = Faster_Rcnn
+        else:
+            self.model = myyolo
+        print("model change to ",self.modellist[index])
+
+    def dragEnterEvent(self, event):
+        print("dragEnterEvent")
+        if event.mimeData().hasUrls():
+            event.accept()
+            print("accepting")
+        else:
+            event.ignore()
+            print("ignored")
+
+    def dropEvent(self, event):
+        print("dropEvent")
+        if event.mimeData().hasUrls():
+            print("accepting")
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+
+            self.imgpath = event.mimeData().urls()[0].toLocalFile()
+            print(self.imgpath)
+
+            pixmap = QPixmap(self.imgpath)
+            self.pixmapItem = self.scene.addPixmap(pixmap)
+            self.graphicsView.fitInView(self.pixmapItem,Qt.KeepAspectRatio)
+            self.remove_rectangle(self.scene)
+
+        else:
+            event.ignore()
+            print("ignored")
+
+    def imgupdate(self):
+        print("imgupdate")
+        resultBox = self.model.prodectfunc(self.imgpath)
+        print("predict over")
+        tempstr = ("预测结果：\nlabel,    x,    y,    w,    h\n")
+
+        label = 0
+        for box in resultBox:
+            print(box[0], box[1], box[2], box[3])
+            self.add_rectangle(self.scene, box[0], box[1], box[2], box[3], label)
+            tempstr += ("  " + str(label) + ",    " + str(int(box[0])) + ",  " + str(int(box[1])) + ",  " + str(
+                int(box[2])) + ",  " + str(int(box[3])) + "\n")
+            print(tempstr)
+            label += 1
+
+        self.label.setStyleSheet("font-size: 10pt")
+        self.label.setText(tempstr)
+
+    def add_rectangle(self,scene,x,y,w,h,label_number):
+        # 创建矩形框并添加到场景和列表中
+        rex,rey = x-w/2,y-h/2
+        rect_item = QGraphicsRectItem(int(rex), int(rey), int(w), int(h))
+        rect_item.setPen(self.pen)
+        scene.addItem(rect_item)
+        self.rectangles.append(rect_item)
+
+        text_item = QGraphicsTextItem(str(label_number))
+        text_item.setPos(int(rex), int(rey))  # 设置文本位置为矩形框的左上角
+        text_item.setDefaultTextColor(QColor('black'))  # 设置文本颜色为白色
+        font = QFont()
+        font.setPointSize(50)  # 设置字体大小
+        font.setBold(True)
+        text_item.setFont(font)  # 设置文本字体和大小
+        scene.addItem(text_item)  # 将文本标签添加到场景中
+
+
+    def remove_rectangle(self,scene):
+        # 从场景和列表中移除矩形框
+        if self.rectangles:
+            for re in self.rectangles:
+                print("remove")
+                scene.removeItem(re)
+                print("removed..")
+            self.rectangles = []
+
+
+
+class MyWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.tab_widget = QTabWidget()
+        self.detectTab = detectionTab()
+        self.tab1 = QTabWidget()
+
+        self.tab_widget.addTab(self.detectTab, "Detection")
+
+        self.setCentralWidget(self.tab_widget)
+
+
+
+if __name__ == "__main__":
+    import sys
+    app = QApplication(sys.argv)
+    MainWindow = MyWindow()
+    MainWindow.resize(1200, 800)
+    # tab = detectionTab()
+    # MainWindow.setCentralWidget(tab)
+    MainWindow.show()
+    sys.exit(app.exec_())
