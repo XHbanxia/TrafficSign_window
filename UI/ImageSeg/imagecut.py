@@ -25,7 +25,7 @@ def cutimge(imagepath,xywh):
 
 if __name__=="__main__":
     img_path = r"E:\TranfficSign\ObjectCheck\tt100k_2021\test\0000002.jpg"
-
+    # 这里我调了我的yolo来做测试，主要是生成那个框框的数据
     xywh = myyolo.prodectfunc(img_path)
     # for item in xywh:
     #     print(item)

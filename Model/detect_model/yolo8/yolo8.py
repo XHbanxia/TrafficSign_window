@@ -1,9 +1,14 @@
+import os
+
 from ultralytics import YOLO
 import cv2
 import numpy as np
 
-
-modul=YOLO(r"E:\TranfficSign\TrafficSign_window\Model\detect_model\modelWeights\yolo8.pt")
+script_path = os.path.abspath(__file__)
+script_dir = os.path.dirname(script_path)
+parent_dir = os.path.dirname(script_dir)
+weights_path = os.path.join(parent_dir, 'modelWeights', 'yolo8.pt')
+modul=YOLO(weights_path)
 def prodectfunc(img_path):
     print("prodecting by yolo8")
     print(img_path)

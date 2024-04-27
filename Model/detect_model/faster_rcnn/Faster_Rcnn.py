@@ -43,6 +43,12 @@ def time_synchronized():
 
 
 def prodectfunc(img):
+    script_path = os.path.abspath(__file__)
+    script_dir = os.path.dirname(script_path)
+    parent_dir = os.path.dirname(script_dir)
+    label_json_path = os.path.join(script_dir, 'pascal_voc_classes.json')
+    weights_path = os.path.join(parent_dir, 'modelWeights', 'resNetFpn-model-3.pth')
+
     # get devices
     print("preditcing by FasterRcnn")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -52,7 +58,6 @@ def prodectfunc(img):
     model = create_model(num_classes=4)
 
     # load train weights
-    weights_path = r"E:\TranfficSign\TrafficSign_window\Model\detect_model\modelWeights\resNetFpn-model-3.pth"
     assert os.path.exists(weights_path), "{} file dose not exist.".format(weights_path)
     weights_dict = torch.load(weights_path, map_location='cpu')
     weights_dict = weights_dict["model"] if "model" in weights_dict else weights_dict
@@ -60,7 +65,6 @@ def prodectfunc(img):
     model.to(device)
 
     # read class_indict
-    label_json_path = r"E:\TranfficSign\TrafficSign_window\Model\detect_model\faster_rcnn\pascal_voc_classes.json"
     assert os.path.exists(label_json_path), "json file {} dose not exist.".format(label_json_path)
     with open(label_json_path, 'r') as f:
         class_dict = json.load(f)
@@ -112,5 +116,9 @@ def prodectfunc(img):
 
 if __name__ == '__main__':
     testimg = r"E:\TranfficSign\ObjectCheck\tt100k_2021\test\0000013.jpg"
+    # print(script_path)
+    # print(script_dir)
+    # print(pascal_path)
+    # print(wight_path)
     result = prodectfunc(testimg)
     print(result)
