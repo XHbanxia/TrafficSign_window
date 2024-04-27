@@ -11,14 +11,15 @@ from Model.detect_model.my_yolo import myyolo
 
 
 class detectionTab(QWidget,Ui_Form):
-    def __init__(self):
+    def __init__(self,callback=None):
         super().__init__()
         self.setupUi(self)
         self.setAcceptDrops(True)
 
         self.imgpath = ""
+        self.callback = callback
 
-        self.pushButton.clicked.connect(self.imgupdate)
+        self.pushButton.clicked.connect(self.imgpredect)
         self.ModelcomboBox.currentIndexChanged.connect(self.on_model_change)
 
         self.scene = QGraphicsScene(self)
@@ -65,18 +66,31 @@ class detectionTab(QWidget,Ui_Form):
             event.accept()
 
             self.imgpath = event.mimeData().urls()[0].toLocalFile()
-            print(self.imgpath)
-
-            pixmap = QPixmap(self.imgpath)
-            self.pixmapItem = self.scene.addPixmap(pixmap)
-            self.graphicsView.fitInView(self.pixmapItem,Qt.KeepAspectRatio)
-            self.remove_rectangle(self.scene)
+            if self.callback:
+                self.callback(self.imgpath)
+                print("callback...")
+            # print(self.imgpath)
+            # self.imgdraw()
 
         else:
             event.ignore()
             print("ignored")
 
-    def imgupdate(self):
+    def imgdraw(self):
+        pixmap = QPixmap(self.imgpath)
+        self.pixmapItem = self.scene.addPixmap(pixmap)
+        self.graphicsView.fitInView(self.pixmapItem, Qt.KeepAspectRatio)
+        self.remove_rectangle(self.scene)
+
+    def imgPathChange(self,imgpath):
+        self.imgpath = imgpath
+        self.imgdraw()
+        print(self.imgpath)
+
+
+
+
+    def imgpredect(self):
         print("imgupdate")
         resultBox = self.model.prodectfunc(self.imgpath)
         print("predict over")

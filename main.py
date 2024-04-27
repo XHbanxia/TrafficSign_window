@@ -39,12 +39,15 @@ class Widget(QFrame):
         self.hBoxLayout.addWidget(self.label, 1, Qt.AlignCenter)
         self.setObjectName(text.replace(' ', '-'))
 
+
 # ----------------------------------------------------------------
 # 在这里定义并继承自己写的控制逻辑页面，然后定义init方法，调用super().__init
 
-class detectWidget(controlGwindow.detectionTab):
-    def __init__(self):
-        super().__init__()
+class DetectWidget(controlGwindow.detectionTab):
+    def __init__(self, iden:str, callback=None):
+        super().__init__(callback=callback)
+        self.setObjectName(iden.replace(' ', '-'))
+
 
 # ----------------------------------------------------------------
 
@@ -54,12 +57,14 @@ class Window(FluentWindow):
     def __init__(self):
         super().__init__()
 
+        self.img_path = ""
+
         # ----------------------------------------------------------------
         # 在这里实例化页面，把widget替换成自己的实例
         # 图像处理
         self.ImageProcessingInterface = Widget('Image Processing', self)
         # 目标检测
-        self.detectInterface = detectWidget()
+        self.detectInterface = DetectWidget('Object Detection', self.updateImgpath)
         # 图像分割
         self.ImageSegmentationInterface = Widget('Image Segmentation', self)
         # 标志分类
@@ -68,8 +73,8 @@ class Window(FluentWindow):
 
         self.settingInterface = Widget('Settings', self)
 
-        self.initNavigation()
         self.initWindow()
+        self.initNavigation()
 
     def initNavigation(self):
         self.addSubInterface(self.ImageProcessingInterface, FIF.PHOTO, 'Image Processing')
@@ -85,11 +90,17 @@ class Window(FluentWindow):
 
         desktop = QApplication.desktop().availableGeometry()
         w, h = desktop.width(), desktop.height()
-        self.move(w//2 - self.width()//2, h//2 - self.height()//2)
+        self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
         # use custom background color theme (only available when the mica effect is disabled)
         self.setCustomBackgroundColor(*FluentBackgroundTheme.DEFAULT_BLUE)
 
+    def updateImgpath(self, newpath):
+        self.img_path = newpath
+        self.ImageProcessingInterface.imgPathChange(self.img_path)
+        self.detectInterface.imgPathChange(self.img_path)
+
+        print("updateImgpath")
 
 
 if __name__ == '__main__':
