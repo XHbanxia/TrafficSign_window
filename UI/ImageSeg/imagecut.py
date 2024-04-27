@@ -30,5 +30,6 @@ if __name__=="__main__":
     # for item in xywh:
     #     print(item)
     crop_image = cutimge(img_path, xywh)
+    # 展示图片
     for item in crop_image:
         item.show()
