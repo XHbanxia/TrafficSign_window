@@ -1,8 +1,7 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QGraphicsScene, QGraphicsRectItem, \
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QGraphicsScene, QGraphicsRectItem, \
     QGraphicsTextItem, QTabWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap,QPen,QColor,QFont
-import sys
 
 from Gviewwindow import Ui_Form
 from Model.detect_model.yolo8 import yolo8

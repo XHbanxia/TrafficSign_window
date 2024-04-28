@@ -1,16 +1,13 @@
 import os
 import time
-import json
 
 import torch
-import torchvision
+
 from PIL import Image
-import matplotlib.pyplot as plt
 
 from torchvision import transforms
 from Model.detect_model.faster_rcnn.network_files import FasterRCNN
-from Model.detect_model.faster_rcnn.backbone import resnet50_fpn_backbone, MobileNetV2
-
+from Model.detect_model.faster_rcnn.backbone import resnet50_fpn_backbone
 
 
 def create_model(num_classes):

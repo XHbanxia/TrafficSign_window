@@ -1,14 +1,12 @@
 import os
 
 from ultralytics import YOLO
-import cv2
-import numpy as np
 
 script_path = os.path.abspath(__file__)
 script_dir = os.path.dirname(script_path)
 parent_dir = os.path.dirname(script_dir)
 weights_path = os.path.join(parent_dir, 'modelWeights', 'myyolo.pt')
-modul=YOLO(weights_path)
+modul = YOLO(weights_path)
 def prodectfunc(img_path):
     print("prodect by my youlo")
     print(img_path)
