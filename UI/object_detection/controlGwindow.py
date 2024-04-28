@@ -79,10 +79,13 @@ class detectionTab(QWidget,Ui_Form):
             print("ignored")
 
     def imgdraw(self):
+        self.remove_rectangle(self.scene)
         pixmap = QPixmap(self.imgpath)
+        if self.scene is not None:
+            self.scene.clear()
         self.pixmapItem = self.scene.addPixmap(pixmap)
         self.graphicsView.fitInView(self.pixmapItem, Qt.KeepAspectRatio)
-        self.remove_rectangle(self.scene)
+
 
     def imgPathChange(self,imgpath):
         self.imgpath = imgpath

@@ -12,6 +12,7 @@ from Model.detect_model.faster_rcnn.network_files import FasterRCNN
 from Model.detect_model.faster_rcnn.backbone import resnet50_fpn_backbone, MobileNetV2
 
 
+
 def create_model(num_classes):
     # mobileNetv2+faster_RCNN
     # backbone = MobileNetV2().features
@@ -43,33 +44,11 @@ def time_synchronized():
 
 
 def prodectfunc(img):
-    script_path = os.path.abspath(__file__)
-    script_dir = os.path.dirname(script_path)
-    parent_dir = os.path.dirname(script_dir)
-    label_json_path = os.path.join(script_dir, 'pascal_voc_classes.json')
-    weights_path = os.path.join(parent_dir, 'modelWeights', 'resNetFpn-model-3.pth')
+
 
     # get devices
     print("preditcing by FasterRcnn")
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # print("using {} device.".format(device))
 
-    # create model
-    model = create_model(num_classes=4)
-
-    # load train weights
-    assert os.path.exists(weights_path), "{} file dose not exist.".format(weights_path)
-    weights_dict = torch.load(weights_path, map_location='cpu')
-    weights_dict = weights_dict["model"] if "model" in weights_dict else weights_dict
-    model.load_state_dict(weights_dict)
-    model.to(device)
-
-    # read class_indict
-    assert os.path.exists(label_json_path), "json file {} dose not exist.".format(label_json_path)
-    with open(label_json_path, 'r') as f:
-        class_dict = json.load(f)
-
-    category_index = {str(v): str(k) for k, v in class_dict.items()}
 
     # load image
     original_img = Image.open(img)
@@ -80,7 +59,6 @@ def prodectfunc(img):
     # expand batch dimension
     img = torch.unsqueeze(img, dim=0)
 
-    model.eval()  # 进入验证模式
     with torch.no_grad():
         # init
         img_height, img_width = img.shape[-2:]
@@ -103,8 +81,8 @@ def prodectfunc(img):
 
         for item in range(len(predict_classes)):
             if predict_scores[item]>0.6:
-                cx = (predict_boxes[item][0]+predict_boxes[item][3])/2
-                cy = (predict_boxes[item][1]+predict_boxes[item][4])/2
+                cx = (predict_boxes[item][0]+predict_boxes[item][2])/2
+                cy = (predict_boxes[item][1]+predict_boxes[item][3])/2
                 w = predict_boxes[item][3]-predict_boxes[item][1]
                 h = predict_boxes[item][2]-predict_boxes[item][0]
                 predict_boxes[item][0] = cx
@@ -116,13 +94,26 @@ def prodectfunc(img):
 
         return result
 
+script_path = os.path.abspath(__file__)
+script_dir = os.path.dirname(script_path)
+parent_dir = os.path.dirname(script_dir)
+# label_json_path = os.path.join(script_dir, 'pascal_voc_classes.json')
+weights_path = os.path.join(parent_dir, 'modelWeights', 'resNetFpn-model-3.pth')
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# print("using {} device.".format(device))
 
+# create model
+model = create_model(num_classes=4)
+
+# load train weights
+assert os.path.exists(weights_path), "{} file dose not exist.".format(weights_path)
+weights_dict = torch.load(weights_path, map_location='cpu')
+weights_dict = weights_dict["model"] if "model" in weights_dict else weights_dict
+model.load_state_dict(weights_dict)
+model.to(device)
+model.eval()  # 进入验证模式
 
 if __name__ == '__main__':
     testimg = r"E:\TranfficSign\ObjectCheck\tt100k_2021\test\0000002.jpg"
-    # print(script_path)
-    # print(script_dir)
-    # print(pascal_path)
-    # print(wight_path)
     result = prodectfunc(testimg)
     print(result)
