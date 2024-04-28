@@ -44,8 +44,8 @@ class Widget(QFrame):
 # 在这里定义并继承自己写的控制逻辑页面，然后定义init方法，调用super().__init
 
 class DetectWidget(controlGwindow.detectionTab):
-    def __init__(self, iden:str, callback=None):
-        super().__init__(callback=callback)
+    def __init__(self, iden:str, callback=None,callback2=None):
+        super().__init__(callback=callback,callback2=callback2)
         self.setObjectName(iden.replace(' ', '-'))
 
 
@@ -58,13 +58,14 @@ class Window(FluentWindow):
         super().__init__()
 
         self.img_path = ""
+        self.resultsbox = []
 
         # ----------------------------------------------------------------
         # 在这里实例化页面，把widget替换成自己的实例
         # 图像处理
         self.ImageProcessingInterface = Widget('Image Processing', self)
         # 目标检测
-        self.detectInterface = DetectWidget('Object Detection', self.updateImgpath)
+        self.detectInterface = DetectWidget('Object Detection', self.updateImgpath,self.detectreslutbox)
         # 图像分割
         self.ImageSegmentationInterface = Widget('Image Segmentation', self)
         # 标志分类
@@ -79,7 +80,7 @@ class Window(FluentWindow):
     def initNavigation(self):
         self.addSubInterface(self.ImageProcessingInterface, FIF.PHOTO, 'Image Processing')
         self.addSubInterface(self.detectInterface, FIF.ZOOM, 'Object Detection')
-        self.addSubInterface(self.ImageSegmentationInterface, FIF.TILES, 'Image Segmentation')
+        self.addSubInterface(self.ImageSegmentationInterface, FIF.TILES, 'Image0 Segmentation')
         self.addSubInterface(self.SignClassificationInterface, FIF.LABEL, 'Sign Classification')
         self.addSubInterface(self.settingInterface, FIF.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
 
@@ -97,10 +98,14 @@ class Window(FluentWindow):
 
     def updateImgpath(self, newpath):
         self.img_path = newpath
-        self.ImageProcessingInterface.imgPathChange(self.img_path)
+        # self.ImageProcessingInterface.imgPathChange(self.img_path)
         self.detectInterface.imgPathChange(self.img_path)
-
         print("updateImgpath")
+
+    def detectreslutbox(self,boxes):
+        self.resultsbox = boxes
+        print("update resultsbox")
+        print(self.resultsbox)
 
 
 if __name__ == '__main__':

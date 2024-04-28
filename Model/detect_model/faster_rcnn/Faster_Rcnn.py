@@ -103,8 +103,12 @@ def prodectfunc(img):
 
         for item in range(len(predict_classes)):
             if predict_scores[item]>0.6:
+                cx = (predict_boxes[item][0]+predict_boxes[item][3])/2
+                cy = (predict_boxes[item][1]+predict_boxes[item][4])/2
                 w = predict_boxes[item][3]-predict_boxes[item][1]
                 h = predict_boxes[item][2]-predict_boxes[item][0]
+                predict_boxes[item][0] = cx
+                predict_boxes[item][1] = cy
                 predict_boxes[item][2] = w
                 predict_boxes[item][3] = h
                 result.append(predict_boxes[item])
@@ -115,7 +119,7 @@ def prodectfunc(img):
 
 
 if __name__ == '__main__':
-    testimg = r"E:\TranfficSign\ObjectCheck\tt100k_2021\test\0000013.jpg"
+    testimg = r"E:\TranfficSign\ObjectCheck\tt100k_2021\test\0000002.jpg"
     # print(script_path)
     # print(script_dir)
     # print(pascal_path)

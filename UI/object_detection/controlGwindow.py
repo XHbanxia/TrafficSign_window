@@ -11,13 +11,15 @@ from Model.detect_model.my_yolo import myyolo
 
 
 class detectionTab(QWidget,Ui_Form):
-    def __init__(self,callback=None):
+    def __init__(self,callback=None,callback2=None):
         super().__init__()
         self.setupUi(self)
         self.setAcceptDrops(True)
 
         self.imgpath = ""
         self.callback = callback
+        self.callback2 = callback2
+        self.resultBox = []
 
         self.pushButton.clicked.connect(self.imgpredect)
         self.ModelcomboBox.currentIndexChanged.connect(self.on_model_change)
@@ -38,7 +40,7 @@ class detectionTab(QWidget,Ui_Form):
         self.ModelcomboBox.setCurrentIndex(0)
 
     def on_model_change(self,index):
-        print(index)
+        # print(index)
         if index == 0:
             self.model = myyolo
         elif index == 1:
@@ -47,7 +49,7 @@ class detectionTab(QWidget,Ui_Form):
             self.model = Faster_Rcnn
         else:
             self.model = myyolo
-        print("model change to ",self.modellist[index])
+        print("model load is ",self.modellist[index])
 
     def dragEnterEvent(self, event):
         print("dragEnterEvent")
@@ -85,24 +87,24 @@ class detectionTab(QWidget,Ui_Form):
     def imgPathChange(self,imgpath):
         self.imgpath = imgpath
         self.imgdraw()
-        print(self.imgpath)
-
-
+        # print(self.imgpath)
 
 
     def imgpredect(self):
-        print("imgupdate")
-        resultBox = self.model.prodectfunc(self.imgpath)
+        # print("imgupdate")
+        self.resultBox = self.model.prodectfunc(self.imgpath)
+        if self.callback2:
+            self.callback2(self.resultBox)
         print("predict over")
         tempstr = ("预测结果：\nlabel,    x,    y,    w,    h\n")
 
         label = 0
-        for box in resultBox:
-            print(box[0], box[1], box[2], box[3])
+        for box in self.resultBox:
+            # print(box[0], box[1], box[2], box[3])
             self.add_rectangle(self.scene, box[0], box[1], box[2], box[3], label)
             tempstr += ("  " + str(label) + ",    " + str(int(box[0])) + ",  " + str(int(box[1])) + ",  " + str(
                 int(box[2])) + ",  " + str(int(box[3])) + "\n")
-            print(tempstr)
+            # print(tempstr)
             label += 1
 
         self.label.setStyleSheet("font-size: 10pt")
@@ -132,7 +134,7 @@ class detectionTab(QWidget,Ui_Form):
             for re in self.rectangles:
                 print("remove")
                 scene.removeItem(re)
-                print("removed..")
+                # print("removed..")
             self.rectangles = []
 
 
