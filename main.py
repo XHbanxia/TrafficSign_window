@@ -1,5 +1,5 @@
 # coding:utf-8
-
+import os
 #  ----------------------------------------------------------------
 # 设计逻辑：
 # UI:
@@ -22,7 +22,13 @@ from qfluentwidgets import FluentIcon as FIF
 # ----------------------------------------------------------------
 # 在这里引入相关UI文件
 from UI.object_detection import controlGwindow
+from UI.object_imgEnhancement import controlEnhance
+from UI.ImageSeg import controlSegWindow
+from UI.classification import class_controlGwindow
 
+script_path = os.path.abspath(__file__)
+script_dir_1 = os.path.dirname(script_path)
+print(script_dir_1)
 
 # ----------------------------------------------------------------
 
@@ -48,6 +54,23 @@ class DetectWidget(controlGwindow.detectionTab):
         super().__init__(callback=callback,callback2=callback2)
         self.setObjectName(iden.replace(' ', '-'))
 
+class EnhanceWidget(controlEnhance.enhance):
+    def __init__(self, iden:str, callback=None):
+        super().__init__(callback=callback)
+        self.setObjectName(iden.replace(' ', '-'))
+
+class SegmentWidget(controlSegWindow.segmentionTab):
+    def __init__(self, iden:str, callback=None):
+        super().__init__(callback=callback)
+        self.setObjectName(iden.replace(' ', '-'))
+
+class ClassWidget(class_controlGwindow.detectionTab):
+    def __init__(self,  iden:str, image_paths):
+        print(image_paths)
+        super().__init__(image_paths)
+        self.setObjectName(iden.replace(' ', '-'))
+
+
 
 # ----------------------------------------------------------------
 
@@ -63,13 +86,13 @@ class Window(FluentWindow):
         # ----------------------------------------------------------------
         # 在这里实例化页面，把widget替换成自己的实例
         # 图像处理
-        self.ImageProcessingInterface = Widget('Image Processing', self)
+        self.ImageProcessingInterface = EnhanceWidget('Image Processing',self.updateImgpath)
         # 目标检测
         self.detectInterface = DetectWidget('Object Detection', self.updateImgpath,self.detectreslutbox)
         # 图像分割
-        self.ImageSegmentationInterface = Widget('Image Segmentation', self)
+        self.ImageSegmentationInterface = SegmentWidget('Image Segmentation',self.ImageListUpdate)
         # 标志分类
-        self.SignClassificationInterface = Widget('Sign Classification', self)
+        self.SignClassificationInterface = ClassWidget('Sign Classification', self.getImagePaths(r'E:\TranfficSign\TrafficSign_window\Model\seg_model\data'))
         # ----------------------------------------------------------------
 
         self.settingInterface = Widget('Settings', self)
@@ -100,10 +123,21 @@ class Window(FluentWindow):
         self.img_path = newpath
         # self.ImageProcessingInterface.imgPathChange(self.img_path)
         self.detectInterface.imgPathChange(self.img_path)
+        self.ImageSegmentationInterface.imgPathChange(self.img_path)
         print("updateImgpath")
 
+    def ImageListUpdate(self):
+        imgdir = os.path.join(script_dir_1,"Model","seg_model","data")
+        # print(imgdir)
+        self.SignClassificationInterface.change(self.getImagePaths(imgdir))
+        print("ImageListUpdate")
+
+    def getImagePaths(self, path):
+        return [os.path.join(path, image) for image in os.listdir(path) if os.path.isdir(os.path.join(path))]
+
     def detectreslutbox(self,boxes):
-        self.resultsbox = boxes
+        # self.resultsbox = boxes
+        self.ImageSegmentationInterface.boxes = boxes
         print("update resultsbox")
         print(self.resultsbox)
 

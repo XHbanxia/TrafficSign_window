@@ -48,6 +48,7 @@ class detectionTab(QWidget,Ui_Form):
             self.model = Faster_Rcnn
         else:
             self.model = myyolo
+        self.remove_rectangle(self.scene)
         print("model load is ",self.modellist[index])
 
     def dragEnterEvent(self, event):
@@ -128,6 +129,7 @@ class detectionTab(QWidget,Ui_Form):
         font.setBold(True)
         text_item.setFont(font)  # 设置文本字体和大小
         scene.addItem(text_item)  # 将文本标签添加到场景中
+        self.rectangles.append(text_item)
 
 
     def remove_rectangle(self,scene):
