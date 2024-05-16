@@ -2,13 +2,14 @@ import os
 import time
 
 import torch
+from thop import profile
 
 from PIL import Image
 
 from torchvision import transforms
 from Model.detect_model.faster_rcnn.network_files import FasterRCNN
 from Model.detect_model.faster_rcnn.backbone import resnet50_fpn_backbone
-
+from torchsummary import summary
 
 def create_model(num_classes):
     # mobileNetv2+faster_RCNN
@@ -65,7 +66,7 @@ def prodectfunc(img):
         t_start = time_synchronized()
         predictions = model(img.to(device))[0]
         t_end = time_synchronized()
-        print("inference+NMS time: {}".format(t_end - t_start))
+        # print("inference+NMS time: {}".format(t_end - t_start))
 
         predict_boxes = predictions["boxes"].tolist()
         predict_classes = predictions["labels"].tolist()
@@ -88,8 +89,22 @@ def prodectfunc(img):
                 predict_boxes[item][3] = h
                 result.append(predict_boxes[item])
 
+        returntime = round((t_end - t_start)*1000, 1)
 
-        return result
+        # original_img = Image.open(r"E:\TranfficSign\ObjectCheck\tt100k_2021\test\0000002.jpg")
+        # data_transform = transforms.Compose([transforms.ToTensor()])
+        # img = data_transform(original_img)
+        # # expand batch dimension
+        # img = torch.unsqueeze(img, dim=0)
+
+        return result,returntime
+
+def model_complexity_info(model, input_size, device):
+    input = torch.randn(input_size).to(device)
+    flops, params = profile(model, inputs=(input, ))
+    print('FLOPs: {}'.format(flops))
+    print('Params: {}'.format(params))
+
 
 script_path = os.path.abspath(__file__)
 script_dir = os.path.dirname(script_path)
@@ -108,9 +123,46 @@ weights_dict = torch.load(weights_path, map_location='cpu')
 weights_dict = weights_dict["model"] if "model" in weights_dict else weights_dict
 model.load_state_dict(weights_dict)
 model.to(device)
+# model_complexity_info(model,(1,3,2048,2048),device)
+# torch.save(model,"E:\TranfficSign\TrafficSign_window\Model\detect_model\modelWeights\Fastercnn.pth")
 model.eval()  # 进入验证模式
 
+# model = model.cuda()
+# input_data = input_data.cpu()
+# summary(model,input_size=(3,2048,2048))
+
+
+
+# x = torch.randn(1, 3, 2048, 2048)
+# x = x.cuda()
+#
+# # 设置导出的ONNX文件名
+# onnx_file_name = "Fasterrcnnmodel.onnx"
+#
+# # 导出模型
+# torch.onnx.export(model,               # 模型
+#                   x,                   # 输入张量
+#                   onnx_file_name,      # ONNX文件名
+#                   export_params=True,  # 导出模型中的参数
+#                   opset_version=12,    # ONNX版本
+#                   do_constant_folding=True,  # 是否执行常量折叠优化
+#                   input_names=['input'],     # 输入名
+#                   output_names=['output'],   # 输出名
+#                   dynamic_axes={'input': {0: 'batch_size'},  # 批处理变量
+#                                 'output': {0: 'batch_size'}})
+
+
+
 if __name__ == '__main__':
-    testimg = r"E:\TranfficSign\ObjectCheck\tt100k_2021\test\0000002.jpg"
-    result = prodectfunc(testimg)
-    print(result)
+
+    sumtime = 0
+    for i in range(1):
+        imglabe = "000000" + str(i)
+        if len(imglabe) > 7:
+            imglabe = imglabe[-7:]
+        # print(imglabe,end=",")
+        testimg = "E:\TranfficSign\ObjectCheck\\tt100k_2021\\test\\" + imglabe + ".jpg"
+        result,runtime = prodectfunc(testimg)
+        sumtime+=runtime
+        print(runtime)
+    print(sumtime)

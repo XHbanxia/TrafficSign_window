@@ -458,7 +458,8 @@ class RegionProposalNetwork(torch.nn.Module):
 
             # Returns the k largest elements of the given input tensor along a given dimension
             _, top_n_idx = ob.topk(pre_nms_top_n, dim=1)
-            r.append(top_n_idx + offset)
+            offset_tensor = torch.tensor(offset, device=top_n_idx.device)
+            r.append(top_n_idx + offset_tensor)
             offset += num_anchors
         return torch.cat(r, dim=1)
 

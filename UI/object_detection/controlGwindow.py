@@ -1,3 +1,5 @@
+import time
+
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QGraphicsScene, QGraphicsRectItem, \
     QGraphicsTextItem, QTabWidget
 from PyQt5.QtCore import Qt
@@ -27,13 +29,19 @@ class detectionTab(QWidget,Ui_Form):
         self.graphicsView.setScene(self.scene)
 
         self.rectangles = []
-        self.model = yolo8
+        self.Yolo8 = yolo8
+        self.Faster_Rcnn = Faster_Rcnn
+        self.myyolo = myyolo
+
+        self.model = self.Faster_Rcnn
+
+
 
         self.pen = QPen()
         self.pen.setColor(Qt.red)
         self.pen.setWidth(10)
 
-        self.modellist = [ "My_yolo", "Yolo8", "Faster_Rcnn"]
+        self.modellist = ["Faster R-CNN", "Yolo8", "Tra-Yolo"]
         for model in self.modellist:
             self.ModelcomboBox.addItem(model)
         self.ModelcomboBox.setCurrentIndex(0)
@@ -41,13 +49,13 @@ class detectionTab(QWidget,Ui_Form):
     def on_model_change(self,index):
         # print(index)
         if index == 0:
-            self.model = myyolo
+            self.model = self.Faster_Rcnn
         elif index == 1:
-            self.model = yolo8
+            self.model = self.Yolo8
         elif index == 2:
-            self.model = Faster_Rcnn
+            self.model = self.myyolo
         else:
-            self.model = myyolo
+            self.model = self.Faster_Rcnn
         self.remove_rectangle(self.scene)
         print("model load is ",self.modellist[index])
 
@@ -71,6 +79,7 @@ class detectionTab(QWidget,Ui_Form):
             if self.callback:
                 self.callback(self.imgpath)
                 print("callback...")
+            self.imgPathChange(self.imgpath)
             # print(self.imgpath)
             # self.imgdraw()
 
@@ -79,6 +88,8 @@ class detectionTab(QWidget,Ui_Form):
             print("ignored")
 
     def imgdraw(self):
+        self.label.setStyleSheet("font-size: 12pt")
+        self.label.setText("结果显示框")
         self.remove_rectangle(self.scene)
         pixmap = QPixmap(self.imgpath)
         if self.scene is not None:
@@ -95,22 +106,27 @@ class detectionTab(QWidget,Ui_Form):
 
     def imgpredect(self):
         # print("imgupdate")
-        self.resultBox = self.model.prodectfunc(self.imgpath)
+        self.resultBox,prdictime= self.model.prodectfunc(self.imgpath)
+
         if self.callback2:
             self.callback2(self.resultBox)
         print("predict over")
-        tempstr = ("预测结果：\nlabel,    x,    y,    w,    h\n")
+        tempstr = "预测结果  \n序号     X     Y    W     H  \n"
 
         label = 0
         for box in self.resultBox:
             # print(box[0], box[1], box[2], box[3])
             self.add_rectangle(self.scene, box[0], box[1], box[2], box[3], label)
-            tempstr += ("  " + str(label) + ",    " + str(int(box[0])) + ",  " + str(int(box[1])) + ",  " + str(
-                int(box[2])) + ",  " + str(int(box[3])) + "\n")
+            # tempstr += "  " + str(label) + ",    " + str(int(box[0])) + ",  " + str(int(box[1])) + ",  " + str(
+            #     int(box[2])) + ",  " + str(int(box[3])) + "\n"
+            tempstr += f"{label:^6}{int(box[0]):^6}{int(box[1]):^6}{int(box[2]):^6}{int(box[3]):^6}\n"
+
             # print(tempstr)
             label += 1
 
-        self.label.setStyleSheet("font-size: 10pt")
+        tempstr += f"\n\n预测花费时间：{prdictime:>5}ms"
+
+        self.label.setStyleSheet("font-size: 18pt")
         self.label.setText(tempstr)
 
     def add_rectangle(self,scene,x,y,w,h,label_number):
@@ -134,9 +150,11 @@ class detectionTab(QWidget,Ui_Form):
 
     def remove_rectangle(self,scene):
         # 从场景和列表中移除矩形框
+        self.label.setStyleSheet("font-size: 12pt")
+        self.label.setText("结果显示框")
         if self.rectangles:
             for re in self.rectangles:
-                print("remove")
+                # print("remove")
                 scene.removeItem(re)
                 # print("removed..")
             self.rectangles = []
