@@ -90,8 +90,9 @@ def prodectfunc(img):
                 result.append(predict_boxes[item])
 
         returntime = round((t_end - t_start)*1000, 1)
-
         # original_img = Image.open(r"E:\TranfficSign\ObjectCheck\tt100k_2021\test\0000002.jpg")
+
+
         # data_transform = transforms.Compose([transforms.ToTensor()])
         # img = data_transform(original_img)
         # # expand batch dimension

@@ -9,6 +9,15 @@ from Gviewwindow import Ui_Form
 from Model.detect_model.yolo8 import yolo8
 from Model.detect_model.faster_rcnn import Faster_Rcnn
 from Model.detect_model.my_yolo import myyolo
+import os
+
+script_path = os.path.abspath(__file__)
+script_dir = os.path.dirname(script_path)
+parent_dir = os.path.dirname(script_dir)
+print(parent_dir)
+# label_json_path = os.path.join(script_dir, 'pascal_voc_classes.json')
+weights_path = os.path.join(parent_dir, 'modelWeights', 'resNetFpn-model-3.pth')
+
 
 
 class detectionTab(QWidget,Ui_Form):
@@ -34,6 +43,7 @@ class detectionTab(QWidget,Ui_Form):
         self.myyolo = myyolo
 
         self.model = self.Faster_Rcnn
+        self.modelflag = True
 
 
 
@@ -50,12 +60,16 @@ class detectionTab(QWidget,Ui_Form):
         # print(index)
         if index == 0:
             self.model = self.Faster_Rcnn
+            self.modelflag = False
         elif index == 1:
             self.model = self.Yolo8
+            self.modelflag = True
         elif index == 2:
             self.model = self.myyolo
+            self.modelflag = True
         else:
             self.model = self.Faster_Rcnn
+            self.modelflag = False
         self.remove_rectangle(self.scene)
         print("model load is ",self.modellist[index])
 
@@ -107,7 +121,9 @@ class detectionTab(QWidget,Ui_Form):
     def imgpredect(self):
         # print("imgupdate")
         self.resultBox,prdictime= self.model.prodectfunc(self.imgpath)
-
+        if self.modelflag==False:
+            reBox, retime = self.model.prodectfunc(r"E:\TranfficSign\TrafficSign_window\Model\detect_model\modelWeights\0000130.jpg")
+            print(reBox, retime)
         if self.callback2:
             self.callback2(self.resultBox)
         print("predict over")

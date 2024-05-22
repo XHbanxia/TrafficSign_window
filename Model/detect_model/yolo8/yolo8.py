@@ -3,6 +3,7 @@ import torch
 from ultralytics import YOLO
 import time
 from Model.detect_model.logger import get_log_time
+from PIL import Image
 
 # import logging
 # from io import StringIO
@@ -28,19 +29,13 @@ modul = YOLO(weights_path)
 # success = modul.export(format="onnx",opset=12)
 def prodectfunc(img_path):
     print("prodecting by yolo8")
-    print(img_path)
+    # torch.cuda.empty_cache()
 
     results = modul.predict(source=img_path)
 
-    # log_contents = log_capture_string.getvalue()
-    # log_capture_string.seek(0)
-    # log_capture_string.truncate()
-    # log_contents = log_contents.split(",")[2]
-    # log_contents = log_contents.split("m")[0]
-    # log_contents = float(log_contents)
     log_contents = get_log_time()
     print(log_contents)
-    # print(results[0].boxes)
+
 
     return results[0].boxes.xywh,log_contents
 
